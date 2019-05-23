@@ -1,0 +1,71 @@
+V "GNAT Lib v2018"
+P ZX
+
+RN
+RV NO_IO
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV SPARK_05
+
+U debug%b		debug.adb		10567966 NE OO PK
+W ada%s			ada.ads			ada.ali
+W ada.integer_text_io%s	a-inteio.ads		a-inteio.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+
+U debug%s		debug.ads		cd66d8b0 EE NE OO PK
+
+D ada.ads		20180524051735 76789da1 ada%s
+D a-except.ads		20180524051735 291912d5 ada.exceptions%s
+D a-inteio.ads		20180524051736 f64b89a4 ada.integer_text_io%s
+D a-ioexce.ads		20180524051734 e4a01f64 ada.io_exceptions%s
+D a-stream.ads		20180524051735 119b8fb3 ada.streams%s
+D a-tags.ads		20180524051736 491b781d ada.tags%s
+D a-textio.ads		20180524051736 881db35a ada.text_io%s
+D a-tiinio.ads		20180524051734 aa04e5d6 ada.text_io.integer_io%s
+D a-unccon.ads		20180524051736 0e9b276f ada.unchecked_conversion%s
+D debug.ads		20190505125630 cd66d8b0 debug%s
+D debug.adb		20190505125630 a3669b28 debug%b
+D interfac.ads		20180524051734 5ab55268 interfaces%s
+D i-cstrea.ads		20180524051734 e53d8b8e interfaces.c_streams%s
+D system.ads		20180524051735 085b6ffb system%s
+D s-crtl.ads		20180524051734 0ebbdb71 system.crtl%s
+D s-exctab.ads		20180524051736 54135002 system.exception_table%s
+D s-ficobl.ads		20180524051736 078245e4 system.file_control_block%s
+D s-parame.ads		20180524051736 48ec542b system.parameters%s
+D s-secsta.ads		20180524051736 20bbe636 system.secondary_stack%s
+D s-soflin.ads		20180524051735 a7318a92 system.soft_links%s
+D s-stache.ads		20180524051736 a37c21ec system.stack_checking%s
+D s-stalib.ads		20180524051736 09bd3940 system.standard_library%s
+D s-stoele.ads		20180524051736 2dc34a04 system.storage_elements%s
+D s-traent.ads		20180524051734 005bf670 system.traceback_entries%s
+D s-unstyp.ads		20180524051735 34867c83 system.unsigned_types%s
+D s-wchcon.ads		20180524051736 1b7d22d2 system.wch_con%s
+X 1 ada.ads
+16K9*Ada 20e8 11|1r6 2r6 7r7 12r7 17r7 22r7 27r7
+X 3 a-inteio.ads
+18K13*Integer_Text_IO[8|46] 11|2w10 17r11
+X 7 a-textio.ads
+49K13*Text_IO 471e16 11|1w10 7r11 12r11 22r11 27r11
+73I12*Field{integer}
+78I12*Number_Base{integer}
+166U14*New_Line 11|22s19
+208U14*Put 11|27s19
+242U14*Put 11|7s19
+263U14*Put_Line 11|12s19
+X 8 a-tiinio.ads
+66U14*Put 11|17s27[3|18]
+67i7 Item{integer} 11|17r31[3|18]
+68i7 Width{7|73I12} 11|17r45[3|18]
+69i7 Base{7|78I12} 11|17r57[3|18]
+X 10 debug.ads
+2K9*Debug 23l5 23e10 11|4b14 31l5 31t10
+4U14*Put 4>18 11|5b14 8l8 8t11
+4a18 Item{string} 11|5b18 7r23
+8U14*Put_Line 8>23 11|10b14 13l8 13t16
+8a23 Item{string} 11|10b23 12r28
+12U14*Put 12>18 11|15b14 18l8 18t11
+12i18 Item{integer} 11|15b18 17r39
+16U14*New_Line 11|20b14 23l8 23t16
+20U14*Put 20>18 11|25b14 28l8 28t11
+20e18 Item{character} 11|25b18 27r23
+
