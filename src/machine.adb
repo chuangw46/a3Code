@@ -156,293 +156,168 @@ package body Machine with SPARK_Mode is
    function DetectInvalidBehaviour(Prog : in Program;
                                    Cycles : in Integer) return Boolean 
     is
-        CycleCount : Integer := 0;
+        CycleCount : Integer := 1;
         Inst : Instr;
         NewAddr : DataVal;
         NewRgValue: DataVal;
     begin
-        PC := ProgramCounter'First;
         while (CycleCount < Cycles) loop
-            Inst := Prog(PC);
+            Inst := Prog(ProgramCounter(CycleCount));
             case Inst.Op is
                 when ADD =>
                     -- validation
                     if -(2**31) > Regs(Inst.AddRd) or Regs(Inst.AddRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.AddRs1) or Regs(Inst.AddRs1) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.AddRs2) or Regs(Inst.AddRs2) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     NewRgValue := Regs(Inst.AddRs1) + Regs(Inst.AddRs2);
                     if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
-                    -- execute
-                    Regs(Inst.AddRd) := NewRgValue;
-                    -- and increment PC by 1 if current instruction is not last one                 
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
+
                 when SUB =>
                     -- validation
                     if -(2**31) > Regs(Inst.SubRd) or Regs(Inst.SubRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.SubRs1) or Regs(Inst.SubRs1) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.SubRs2) or Regs(Inst.SubRs2) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     NewRgValue := Regs(Inst.SubRs1) - Regs(Inst.SubRs2);
                     if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
-                    -- execute
-                    Regs(Inst.SubRd) := NewRgValue;
-                    -- increase pc        
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
+
                 when MUL =>
                     -- validation
                     if -(2**31) > Regs(Inst.MulRd) or Regs(Inst.MulRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.MulRs1) or Regs(Inst.MulRs1) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.MulRs2) or Regs(Inst.MulRs2) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     NewRgValue := Regs(Inst.MulRs1) * Regs(Inst.MulRs2);
                     if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
-                        return True;
-                    end if;
-                    -- execute
-                    Regs(Inst.MulRd) := NewRgValue;
-                    -- increase pc
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
-                when DIV =>
-                    -- validation
-                    if Regs(Inst.DivRs2) = 0 then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
 
+                when DIV =>
+                    -- validation
+                    if Regs(Inst.DivRs2) = 0 then
+                        return True;
+                    end if;
                     if -(2**31) > Regs(Inst.DivRd) or Regs(Inst.DivRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.DivRs1) or Regs(Inst.DivRs1) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     if -(2**31) > Regs(Inst.DivRs2) or Regs(Inst.DivRs2) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     NewRgValue := Regs(Inst.DivRs1) / Regs(Inst.DivRs2);
                     if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
-                    -- execute
-                    Regs(Inst.DivRd) := NewRgValue;
-                    -- increase pc                  
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
+
                 when LDR =>
                     -- validation
                     if -(2**31) > Regs(Inst.LdrRd) or  Regs(Inst.LdrRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     -- check if value of LdrRs is out of range
                     if -(2**31) > Regs(Inst.LdrRs) or  Regs(Inst.LdrRs) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
                     -- check if computed address is invalid
                     NewAddr := Regs(Inst.LdrRs) + DataVal(Inst.LdrOffs);
                     if NewAddr not in 0 .. 65535 then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
 
                     -- check if value in the memory location is out of range
                     if -(2**31) > Memory(Addr(NewAddr)) or Memory(Addr(NewAddr)) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
-                    end if;
-
-                    -- this LDR instruction is valid, so execute it
-                    Regs(Inst.LdrRd) := Memory(Addr(NewAddr));
-                    -- and increment PC by 1 if current instruction is not last one
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
                     end if;
 
                 when STR =>
                     -- check if value of StrRa is out of range
                     if -(2**31) > Regs(Inst.StrRa) or  Regs(Inst.StrRa) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
 
                     -- check if value of StrRb is out of range
                     if -(2**31) > Regs(Inst.StrRb) or  Regs(Inst.StrRb) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
 
                     -- check if computed address is invalid
                     NewAddr := Regs(Inst.StrRa) + DataVal(Inst.StrOffs);
                     if NewAddr not in 0 .. 65535 then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
-                    end if;
-
-                    -- this STR instruction is valid, so execute it
-                    Memory(Addr(NewAddr)) := Regs(Inst.StrRb);
-                    -- and increment PC by 1 if current instruction is not last one
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
                     end if;
 
                 when MOV =>
                     if -(2**31) > Regs(Inst.MovRd) or  Regs(Inst.MovRd) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;                
-                    -- execute
-                    Regs(Inst.MovRd) := DataVal(Inst.MovOffs);
-
-                    -- increment PC by 1 if current instruction is not last one
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
 
                 when Instruction.RET =>
                     -- check if returning value RetRs is out of range
                     if -(2**31) > Regs(Inst.RetRs) or Regs(Inst.RetRs) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     else   
                     -- successfully RET a valid value, so return False
-                        Regs := (others => 0);
-                        Memory := (others => 0);
-                        for arr of Regs loop
-                            Put_Line(arr'Image);
-                        end loop;
                         return False;
                     end if;
 
                 when JMP =>
                     -- check if there is a infinite loop by "JMP 0"
                     if Inst.JmpOffs = 0 then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
-
                     -- check if JMP intends to alter the PC to become out of range
                     if Integer(PC) + Integer(Inst.JmpOffs) not in 1 .. MAX_PROGRAM_LENGTH then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
-                    else
-                        -- valid JMP instruction, so execute it
-                        PC := ProgramCounter(Integer(PC) + Integer(Inst.JmpOffs));
                     end if;
+                    CycleCount := CycleCount + Integer(Inst.JmpOffs) - 1;
 
                 when JZ =>
                     -- check if value of JzRa is out of range
                     if -(2**31) > Regs(Inst.JzRa) or Regs(Inst.JzRa) > +(2**31 - 1) then
-                        Regs := (others => 0);
-                        Memory := (others => 0);
                         return True;
                     end if;
 
                     if Regs(Inst.JzRa) = 0 then
                         -- JzRa holds the value 0, so check if JZ intends to alter the PC to become out of range
                         if Integer(PC) + Integer(Inst.JzOffs) not in 1 .. MAX_PROGRAM_LENGTH then
-                            Regs := (others => 0);
-                            Memory := (others => 0);
                             return True;
                         -- JzRa holds the value 0, so check if there is a infinite loop by "JZ Ra 0"
                         elsif Integer(Inst.JzOffs) = 0 then
-                            Regs := (others => 0);
-                            Memory := (others => 0);
                             return True;
-                        -- valid JZ instruction and JzRa holds the value 0, so execute it
-                        else
-                            PC := ProgramCounter(Integer(PC) + Integer(Inst.JzOffs));
                         end if;
-                    else
-                        -- JzRa does not hold the value 0, so increment PC by 1 if current instruction is not last one
-                        if Integer(PC) < MAX_PROGRAM_LENGTH then
-                            PC := ProgramCounter(Integer(PC) + 1);
-                        end if;
-                    end if;
+                        CycleCount := CycleCount + Integer(Inst.JzOffs) - 1;
+                    end if;                  
 
                 when NOP =>
-                    -- increment PC by 1 if current instruction is not last one
-                    if Integer(PC) < MAX_PROGRAM_LENGTH then
-                        PC := ProgramCounter(Integer(PC) + 1);
-                    end if;
+                    null;
 
             end case;
             CycleCount := CycleCount + 1;
         end loop;
 
         -- RET instruction never execute, so return True
-        Regs := (others => 0);
-        Memory := (others => 0);
         return True;
    end DetectInvalidBehaviour;
    
