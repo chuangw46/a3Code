@@ -9,6 +9,7 @@ package body Machine with SPARK_Mode is
    -- data values are 32-bit integers
    -- this is the type of words used in the virtual machine
    type DataVal is range -(2**31) .. +(2**31 - 1);
+   type GalaxyVal is range -(2**62)..+(2**62);
       
    -- the registers
    Regs : array (Reg) of DataVal := (others => 0);
@@ -158,127 +159,184 @@ package body Machine with SPARK_Mode is
     is
         CycleCount : Integer := 1;
         Inst : Instr;
-        NewAddr : DataVal;
-        NewRgValue: DataVal;
+        TempVal: GalaxyVal;
+        -- the dummy registers for this function only
+        DummyRegs : array (Reg) of DataVal := (others => 0);
+        -- the dummy memory for this function only
+        DummyMemory : array (Addr) of DataVal := (others => 0);
     begin
         while (CycleCount < Cycles) loop
-            Inst := Prog(ProgramCounter(CycleCount));
+            
+            if CycleCount in 1 .. MAX_PROGRAM_LENGTH then 
+              -- get next instruction if CycleCount is valid
+              Inst := Prog(ProgramCounter(CycleCount));
+            else
+              -- or break loop if invalid
+              exit;
+            end if;
+
             case Inst.Op is
                 when ADD =>
                     -- validation
-                    if -(2**31) > Regs(Inst.AddRd) or Regs(Inst.AddRd) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.AddRd) or Regs(Inst.AddRd) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.AddRs1) or Regs(Inst.AddRs1) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.AddRs1) or Regs(Inst.AddRs1) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.AddRs2) or Regs(Inst.AddRs2) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.AddRs2) or Regs(Inst.AddRs2) > DataVal'Last then
                         return True;
                     end if;
-                    NewRgValue := Regs(Inst.AddRs1) + Regs(Inst.AddRs2);
-                    if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
+
+                    -- if individual reg is valid, then compute                
+                    TempVal := GalaxyVal(Regs(Inst.AddRs1)) + GalaxyVal(Regs(Inst.AddRs2));
+                    -- validate the computed result
+                    if -(2**31) > TempVal or TempVal > (2**31 - 1) then
                         return True;
                     end if;
+                    -- if computed result is valid, then put into dummy register
+                    DummyRegs(Inst.AddRd) := DataVal(TempVal);
 
                 when SUB =>
                     -- validation
-                    if -(2**31) > Regs(Inst.SubRd) or Regs(Inst.SubRd) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.SubRd) or Regs(Inst.SubRd) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.SubRs1) or Regs(Inst.SubRs1) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.SubRs1) or Regs(Inst.SubRs1) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.SubRs2) or Regs(Inst.SubRs2) > +(2**31 - 1) then
-                        return True;
-                    end if;
-                    NewRgValue := Regs(Inst.SubRs1) - Regs(Inst.SubRs2);
-                    if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.SubRs2) or Regs(Inst.SubRs2) > DataVal'Last then
                         return True;
                     end if;
 
+                    -- if individual reg is valid, then compute                
+                    TempVal := GalaxyVal(Regs(Inst.SubRs1)) - GalaxyVal(Regs(Inst.SubRs2));
+                    -- validate the computed result                    
+                    if -(2**31) > TempVal or TempVal > (2**31 - 1) then
+                        return True;
+                    end if;                    
+                    -- if computed result is valid, then put into dummy register
+                    DummyRegs(Inst.SubRd) := DataVal(TempVal);
+
                 when MUL =>
                     -- validation
-                    if -(2**31) > Regs(Inst.MulRd) or Regs(Inst.MulRd) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.MulRd) or Regs(Inst.MulRd) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.MulRs1) or Regs(Inst.MulRs1) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.MulRs1) or Regs(Inst.MulRs1) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.MulRs2) or Regs(Inst.MulRs2) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.MulRs2) or Regs(Inst.MulRs2) > DataVal'Last then
                         return True;
                     end if;
-                    NewRgValue := Regs(Inst.MulRs1) * Regs(Inst.MulRs2);
-                    if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
+
+                    -- if individual reg is valid, then compute                
+                    TempVal := GalaxyVal(Regs(Inst.MulRs1)) * GalaxyVal(Regs(Inst.MulRs2));
+                    -- validate the computed result                    
+                    if -(2**31) > TempVal or TempVal > (2**31 - 1) then
                         return True;
-                    end if;
+                    end if;                    
+                    -- if computed result is valid, then put into dummy register
+                    DummyRegs(Inst.MulRd) := DataVal(TempVal);                    
 
                 when DIV =>
                     -- validation
                     if Regs(Inst.DivRs2) = 0 then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.DivRd) or Regs(Inst.DivRd) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.DivRd) or Regs(Inst.DivRd) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.DivRs1) or Regs(Inst.DivRs1) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.DivRs1) or Regs(Inst.DivRs1) > DataVal'Last then
                         return True;
                     end if;
-                    if -(2**31) > Regs(Inst.DivRs2) or Regs(Inst.DivRs2) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.DivRs2) or Regs(Inst.DivRs2) > DataVal'Last then
                         return True;
                     end if;
-                    NewRgValue := Regs(Inst.DivRs1) / Regs(Inst.DivRs2);
-                    if -(2**31) > NewRgValue or NewRgValue > +(2**31 - 1) then
+
+                    -- if individual reg is valid, then compute                
+                    TempVal := GalaxyVal(Regs(Inst.DivRs1)) / GalaxyVal(Regs(Inst.DivRs2));
+                    -- validate the computed result                    
+                    if -(2**31) > TempVal or TempVal > (2**31 - 1) then
                         return True;
-                    end if;
+                    end if;                    
+                    -- if computed result is valid, then put into dummy register
+                    DummyRegs(Inst.DivRd) := DataVal(TempVal); 
 
                 when LDR =>
-                    -- validation
-                    if -(2**31) > Regs(Inst.LdrRd) or  Regs(Inst.LdrRd) > +(2**31 - 1) then
+                    -- validate the value in LdrRd
+                    if DataVal'First > Regs(Inst.LdrRd) or  Regs(Inst.LdrRd) > DataVal'Last then
                         return True;
                     end if;
-                    -- check if value of LdrRs is out of range
-                    if -(2**31) > Regs(Inst.LdrRs) or  Regs(Inst.LdrRs) > +(2**31 - 1) then
+                    -- validate the value in LdrRs
+                    if DataVal'First > Regs(Inst.LdrRs) or  Regs(Inst.LdrRs) > DataVal'Last then
                         return True;
                     end if;
-                    -- check if computed address is invalid
-                    NewAddr := Regs(Inst.LdrRs) + DataVal(Inst.LdrOffs);
-                    if NewAddr not in 0 .. 65535 then
+                    -- validate the value in LdrOffs
+                    if Offset'First > Inst.LdrOffs or  Inst.LdrOffs > Offset'Last then
+                        return True;
+                    end if;
+                    -- if individual reg or offs are valid, then compute address
+                    TempVal := GalaxyVal(Regs(Inst.LdrRs)) + GalaxyVal(Inst.LdrOffs);
+                    -- validate the computed address
+                    if TempVal not in 0 .. 65535 then
                         return True;
                     end if;
 
-                    -- check if value in the memory location is out of range
-                    if -(2**31) > Memory(Addr(NewAddr)) or Memory(Addr(NewAddr)) > +(2**31 - 1) then
+                    -- validate the value stored in the computed address
+                    if DataVal'First > Memory(Addr(TempVal)) 
+                        or Memory(Addr(TempVal)) > DataVal'Last then
                         return True;
                     end if;
+
+                    -- if pass all validations, then read value from the computed address
+                    -- and put into register
+                    DummyRegs(Inst.LdrRd) := DummyMemory(Addr(TempVal));
 
                 when STR =>
-                    -- check if value of StrRa is out of range
-                    if -(2**31) > Regs(Inst.StrRa) or  Regs(Inst.StrRa) > +(2**31 - 1) then
+                    -- validate the value in StrRa
+                    if DataVal'First > Regs(Inst.StrRa) or  Regs(Inst.StrRa) > DataVal'Last then
+                        return True;
+                    end if;
+                    -- validate the value in StrRb
+                    if DataVal'First > Regs(Inst.StrRb) or  Regs(Inst.StrRb) > DataVal'Last then
+                        return True;
+                    end if;
+                    -- validate the value in StrOffs
+                    if Offset'First > Inst.StrOffs or  Inst.StrOffs > Offset'Last then
                         return True;
                     end if;
 
-                    -- check if value of StrRb is out of range
-                    if -(2**31) > Regs(Inst.StrRb) or  Regs(Inst.StrRb) > +(2**31 - 1) then
+                    -- if individual reg or offs are valid, then compute address
+                    TempVal := GalaxyVal(Regs(Inst.StrRa)) + GalaxyVal(Inst.StrOffs);
+                    -- validate the computed address
+                    if TempVal not in 0 .. 65535 then
                         return True;
                     end if;
 
-                    -- check if computed address is invalid
-                    NewAddr := Regs(Inst.StrRa) + DataVal(Inst.StrOffs);
-                    if NewAddr not in 0 .. 65535 then
-                        return True;
-                    end if;
+                    -- if pass all validations, then read value from the register 
+                    -- and put into the computed address
+                    DummyMemory(Addr(TempVal)) := DummyRegs(Inst.StrRb);
 
                 when MOV =>
-                    if -(2**31) > Regs(Inst.MovRd) or  Regs(Inst.MovRd) > +(2**31 - 1) then
+                    -- validate the value in MovRd                
+                    if DataVal'First > Regs(Inst.MovRd) or  Regs(Inst.MovRd) > DataVal'Last then
                         return True;
-                    end if;                
+                    end if;
+                    -- validate MovOffs                
+                    if Offset'First > Inst.MovOffs or  Inst.MovOffs > Offset'Last then
+                        return True;
+                    end if;
+
+                    -- if all regs and offs are valid, then put the value(offs) into register 
+                    DummyRegs(Inst.MovRd) := DataVal(Inst.MovOffs);       
 
                 when Instruction.RET =>
-                    -- check if returning value RetRs is out of range
-                    if -(2**31) > Regs(Inst.RetRs) or Regs(Inst.RetRs) > +(2**31 - 1) then
+                    -- validate the value in RetRs                
+                    if DataVal'First > Regs(Inst.RetRs) or Regs(Inst.RetRs) > DataVal'Last then
                         return True;
                     else   
-                    -- successfully RET a valid value, so return False
+                    -- if the value is valid, then return. 
                         return False;
                     end if;
 
@@ -287,6 +345,10 @@ package body Machine with SPARK_Mode is
                     if Inst.JmpOffs = 0 then
                         return True;
                     end if;
+                    -- check if value of JmpOffs is out of range
+                    if Offset'First > Inst.JmpOffs or  Inst.JmpOffs > Offset'Last then
+                        return True;
+                    end if;  
                     -- check if JMP intends to alter the PC to become out of range
                     if Integer(PC) + Integer(Inst.JmpOffs) not in 1 .. MAX_PROGRAM_LENGTH then
                         return True;
@@ -295,20 +357,28 @@ package body Machine with SPARK_Mode is
 
                 when JZ =>
                     -- check if value of JzRa is out of range
-                    if -(2**31) > Regs(Inst.JzRa) or Regs(Inst.JzRa) > +(2**31 - 1) then
+                    if DataVal'First > Regs(Inst.JzRa) or Regs(Inst.JzRa) > DataVal'Last then
                         return True;
                     end if;
-
+                    -- check if value of JzOffs is out of range
+                    if Offset'First > Inst.JzOffs or  Inst.JzOffs > Offset'Last then
+                        return True;
+                    end if; 
                     if Regs(Inst.JzRa) = 0 then
-                        -- JzRa holds the value 0, so check if JZ intends to alter the PC to become out of range
+                        -- if JzRa holds the value 0, 
+                        -- check if JZ intends to alter the PC to become out of range
                         if Integer(PC) + Integer(Inst.JzOffs) not in 1 .. MAX_PROGRAM_LENGTH then
                             return True;
                         -- JzRa holds the value 0, so check if there is a infinite loop by "JZ Ra 0"
                         elsif Integer(Inst.JzOffs) = 0 then
                             return True;
                         end if;
+                    end if;
+
+                    -- check on dummy register and execute JZ
+                    if DummyRegs(Inst.JzRa) = 0 then  
                         CycleCount := CycleCount + Integer(Inst.JzOffs) - 1;
-                    end if;                  
+                    end if;
 
                 when NOP =>
                     null;
